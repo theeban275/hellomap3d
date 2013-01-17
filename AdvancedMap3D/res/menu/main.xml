@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+  <item android:id="@+id/previous_fragment"
+    android:title="Previous Fragment"
+    android:icon="@drawable/ic_menu_back"
+    android:showAsAction="ifRoom"/>
+  <item android:id="@+id/next_fragment"
+    android:title="Next Fragment"
+    android:icon="@drawable/ic_menu_forward"
+    android:showAsAction="ifRoom"/>
+  
+</menu>
