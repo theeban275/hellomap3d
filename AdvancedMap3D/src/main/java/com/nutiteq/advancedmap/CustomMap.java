@@ -61,7 +61,7 @@ public class CustomMap extends MapView {
 		// add event listener
 		MapEventListener mapListener = new MapEventListener(activity);
 		this.getOptions().setMapListener(mapListener);
-
+		
 		// Here we use MapQuest open tiles
 		// Almost all online tiled maps use EPSG3857 projection.
 		//TMSMapLayer mapLayer = new TMSMapLayer(new EPSG3857(), 0, 18, 0,
@@ -69,16 +69,16 @@ public class CustomMap extends MapView {
 
 		//this.getLayers().setBaseLayer(mapLayer);
 		
-		addGdalLayer(new EPSG3857(), Environment.getExternalStorageDirectory().getPath()+"/Map/natural-earth-2-mercator.tif");
+		addGdalLayer(new EPSG3857(), Environment.getExternalStorageDirectory().getPath()+"/Maps/natural-earth-2-mercator.tif");
 
 		// set initial map view camera - optional. "World view" is default
 		// Location: San Francisco
-		this.setFocusPoint(this.getLayers().getBaseLayer().getProjection().fromWgs84(-122.41666666667f, 37.76666666666f));
+		this.setFocusPoint(this.getLayers().getBaseLayer().getProjection().fromWgs84(25.4426f, 42.7026f));
 
 		// rotation - 0 = north-up
 		this.setRotation(0f);
 		// zoom - 0 = world, like on most web maps
-		this.setZoom(4.0f);
+		this.setZoom(8.0f);
         // tilt means perspective view. Default is 90 degrees for "normal" 2D map view, minimum allowed is 30 degrees.
 		this.setTilt(90.0f);
 
@@ -138,6 +138,7 @@ public class CustomMap extends MapView {
 		GdalMapLayer gdalLayer;
 		try {
             gdalLayer = new GdalMapLayer(proj, 0, 18, nextId(), filePath, this, true);
+            gdalLayer.setShowAlways(true);
 			this.getLayers().setBaseLayer(gdalLayer);
 
 		} catch (IOException e) {

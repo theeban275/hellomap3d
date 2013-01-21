@@ -3,7 +3,10 @@ package com.nutiteq.advancedmap;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -20,12 +23,78 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 
+import com.nutiteq.layers.vector.WKBLayer;
 import com.nutiteq.log.Log;
+import com.nutiteq.projections.EPSG3857;
+import com.nutiteq.style.LineStyle;
+import com.nutiteq.style.PointStyle;
+import com.nutiteq.style.PolygonStyle;
+import com.nutiteq.style.StyleSet;
+import com.nutiteq.utils.UnscaledBitmapLoader;
 
 public class AdvancedMapActivity extends FragmentActivity {
 	
 	private List<Fragment> fragmentList;
 	private int currentIndex;
+	
+	public static class VectorMapFragment extends Fragment {
+		
+		private TabHost tabHost;
+		
+		@Override
+	    public View onCreateView(LayoutInflater inflater, 
+	    		                  ViewGroup container,
+	                              Bundle savedInstanceState) {	
+			
+			if (tabHost == null){
+				tabHost = (TabHost) inflater.inflate(R.layout.tab_group, container, false);
+				tabHost.setup();
+				
+				TabSpec spec = tabHost.newTabSpec("tab");
+				spec.setContent(new TabHost.TabContentFactory() {
+					
+					@Override
+					public View createTabContent(String tag) {
+						CustomMap map = new CustomMap(VectorMapFragment.this.getActivity());
+
+						int minZoom = 4;
+						
+						StyleSet<PointStyle> pointStyleSet = new StyleSet<PointStyle>();
+				        Bitmap pointMarker = UnscaledBitmapLoader.decodeResource(VectorMapFragment.this.getActivity().getResources(), R.drawable.point);
+				        PointStyle pointStyle = PointStyle.builder().setBitmap(pointMarker).setSize(0.05f).setColor(Color.BLACK).build();
+						pointStyleSet.setZoomStyle(minZoom, pointStyle);
+
+						StyleSet<LineStyle> lineStyleSet = new StyleSet<LineStyle>();
+				        lineStyleSet.setZoomStyle(minZoom, LineStyle.builder().setWidth(0.1f).setColor(Color.GREEN).build());
+				        
+				        PolygonStyle polygonStyle = PolygonStyle.builder().setColor(Color.BLUE).build();
+				        StyleSet<PolygonStyle> polygonStyleSet = new StyleSet<PolygonStyle>(null);
+						polygonStyleSet.setZoomStyle(minZoom, polygonStyle);
+						
+						try {
+							map.getLayers().addLayer(new WKBLayer(new EPSG3857(), Environment.getExternalStorageDirectory().getPath()+"/Maps/vectors.wkb",
+									pointStyleSet, lineStyleSet, polygonStyleSet));
+						} catch (Exception e) {
+							
+						}
+
+						return map;
+					}
+				});
+				spec.setIndicator("tab");
+				tabHost.addTab(spec);
+				
+			}
+			
+			// fix issue with pressing back button
+			if (tabHost.getParent() != null){
+				((ViewGroup) tabHost.getParent()).removeView(tabHost);
+			}
+			
+			return tabHost;
+		}
+		
+	}
 	
 	public static class SingleMapFragment extends Fragment {
 		
@@ -86,7 +155,8 @@ public class AdvancedMapActivity extends FragmentActivity {
 						TextView text = new TextView(SingleMapInLayoutFragment.this.getActivity());
 						text.setText("Map Example");
 						layout.addView(text);
-						layout.addView(new CustomMap(SingleMapInLayoutFragment.this.getActivity()));
+						LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+				        layout.addView(new CustomMap(SingleMapInLayoutFragment.this.getActivity()), params);
 						Button button = new Button(SingleMapInLayoutFragment.this.getActivity());
 						button.setText("Button");
 						layout.addView(button);
@@ -174,7 +244,8 @@ public class AdvancedMapActivity extends FragmentActivity {
 					public View createTabContent(String tag) {
 						LinearLayout layout = new LinearLayout(DoubleMapInLayoutFragment.this.getActivity());
 						layout.setOrientation(LinearLayout.VERTICAL);
-						layout.addView(new CustomMap(DoubleMapInLayoutFragment.this.getActivity()));
+						LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+				        layout.addView(new CustomMap(DoubleMapInLayoutFragment.this.getActivity()), params);
 						return layout;
 					}
 				});
@@ -188,7 +259,8 @@ public class AdvancedMapActivity extends FragmentActivity {
 					public View createTabContent(String tag) {
 						LinearLayout layout = new LinearLayout(DoubleMapInLayoutFragment.this.getActivity());
 						layout.setOrientation(LinearLayout.VERTICAL);
-						layout.addView(new CustomMap(DoubleMapInLayoutFragment.this.getActivity()));
+						LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+				        layout.addView(new CustomMap(DoubleMapInLayoutFragment.this.getActivity()), params);
 						return layout;
 					}
 				});
@@ -229,6 +301,7 @@ public class AdvancedMapActivity extends FragmentActivity {
 		Log.setTag("hellomap");
 		
 		fragmentList = new ArrayList<Fragment>();
+		fragmentList.add(new VectorMapFragment());
 		fragmentList.add(new SingleMapFragment());
 		fragmentList.add(new SingleMapInLayoutFragment());
 		fragmentList.add(new DoubleMapFragment());
